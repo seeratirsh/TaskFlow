@@ -1,0 +1,120 @@
+<%- include('../partials/header') %>
+<div class="container py-4">
+  <!-- Project Header -->
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <a href="/projects" class="text-muted small text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Back to Projects</a>
+      <h2 class="fw-bold mb-0 mt-1"><%= project.name %></h2>
+      <p class="text-muted"><%= project.description || 'No description.' %></p>
+    </div>
+    <% if (isAdmin) { %>
+      <form action="/projects/<%= project._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this project and all its tasks?')">
+        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Delete</button>
+      </form>
+    <% } %>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Members + Add Task -->
+    <div class="col-md-4">
+      <!-- Members -->
+      <div class="card border-0 shadow-sm rounded-4 mb-3">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary me-2"></i>Team Members</h6>
+          <div class="d-flex align-items-center mb-2">
+            <span class="badge bg-primary me-2">Admin</span>
+            <span><%= project.admin.name %> <span class="text-muted small">(<%= project.admin.email %>)</span></span>
+          </div>
+          <% project.members.forEach(m => { %>
+            <div class="d-flex align-items-center mb-2">
+              <span class="badge bg-secondary me-2">Member</span>
+              <span><%= m.name %> <span class="text-muted small">(<%= m.email %>)</span></span>
+            </div>
+          <% }) %>
+
+          <% if (isAdmin) { %>
+            <hr/>
+            <p class="fw-semibold small mb-2">Add Member by Email</p>
+            <form action="/projects/<%= project._id %>/members" method="POST" class="d-flex gap-2">
+              <input type="email" name="email" class="form-control form-control-sm" placeholder="member@email.com" required/>
+              <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i></button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Add Task (Admin only) -->
+      <% if (isAdmin) { %>
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle-fill text-success me-2"></i>Create Task</h6>
+          <form action="/tasks" method="POST">
+            <input type="hidden" name="projectId" value="<%= project._id %>"/>
+            <div class="mb-2">
+              <input type="text" name="title" class="form-control form-control-sm" placeholder="Task title *" required/>
+            </div>
+            <div class="mb-2">
+              <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="Description (optional)"></textarea>
+            </div>
+            <div class="mb-2">
+              <select name="assignedTo" class="form-select form-select-sm" required>
+                <option value="">Assign to...</option>
+                <% allMembers.forEach(m => { %>
+                  <option value="<%= m._id %>"><%= m.name %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold mb-1">Due Date *</label>
+              <input type="date" name="dueDate" class="form-control form-control-sm" required/>
+            </div>
+            <button class="btn btn-success btn-sm w-100">Create Task</button>
+          </form>
+        </div>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Right: Tasks -->
+    <div class="col-md-8">
+      <h5 class="fw-bold mb-3"><i class="bi bi-list-task text-primary me-2"></i>Tasks (<%= tasks.length %>)</h5>
+      <% if (tasks.length === 0) { %>
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-clipboard-x" style="font-size:3rem;"></i>
+          <p class="mt-2">No tasks yet. <% if (isAdmin) { %>Create one on the left!<% } %></p>
+        </div>
+      <% } %>
+      <% tasks.forEach(task => { %>
+        <div class="task-card rounded-4 p-3 mb-2 bg-white shadow-sm">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <div class="fw-semibold"><%= task.title %></div>
+              <% if (task.description) { %><div class="text-muted small"><%= task.description %></div><% } %>
+              <div class="text-muted small mt-1">
+                <i class="bi bi-person me-1"></i><%= task.assignedTo.name %>
+                &nbsp;·&nbsp;
+                <i class="bi bi-calendar me-1"></i>Due: <%= new Date(task.dueDate).toLocaleDateString('en-IN') %>
+              </div>
+            </div>
+            <div class="d-flex flex-column align-items-end gap-1 ms-3">
+              <span id="badge-<%= task._id %>" class="badge status-badge <%= task.status === 'Completed' ? 'bg-success' : task.status === 'Overdue' ? 'bg-danger' : task.status === 'In Progress' ? 'bg-warning text-dark' : 'bg-secondary' %>">
+                <%= task.status %>
+              </span>
+              <select class="form-select form-select-sm status-select" data-task-id="<%= task._id %>" style="width:130px;">
+                <option <%= task.status==='Todo'?'selected':'' %>>Todo</option>
+                <option <%= task.status==='In Progress'?'selected':'' %>>In Progress</option>
+                <option <%= task.status==='Completed'?'selected':'' %>>Completed</option>
+              </select>
+              <% if (isAdmin) { %>
+                <form action="/tasks/<%= task._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this task?')">
+                  <button class="btn btn-outline-danger btn-sm py-0 px-2"><i class="bi bi-trash"></i></button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

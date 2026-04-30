@@ -1,0 +1,98 @@
+<%- include('../partials/header') %>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0">Welcome, <%= currentUser.name %> 👋</h2>
+      <p class="text-muted mb-0">Here's your task overview</p>
+    </div>
+    <% if (isAdmin) { %>
+      <a href="/projects/new" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>New Project</a>
+    <% } %>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card rounded-4 p-3 text-center bg-white shadow-sm">
+        <div class="stat-number text-dark"><%= stats.total %></div>
+        <div class="text-muted small">Total Tasks</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card rounded-4 p-3 text-center bg-white shadow-sm">
+        <div class="stat-number text-warning"><%= stats.inProgress %></div>
+        <div class="text-muted small">In Progress</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card rounded-4 p-3 text-center bg-white shadow-sm">
+        <div class="stat-number text-success"><%= stats.completed %></div>
+        <div class="text-muted small">Completed</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card rounded-4 p-3 text-center bg-white shadow-sm">
+        <div class="stat-number text-danger"><%= stats.overdue %></div>
+        <div class="text-muted small">Overdue</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Projects -->
+    <div class="col-md-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-folder-fill text-primary me-2"></i>My Projects</h5>
+      <% if (projects.length === 0) { %>
+        <div class="text-muted">No projects yet.</div>
+      <% } %>
+      <% projects.forEach(p => { %>
+        <a href="/projects/<%= p._id %>" class="text-decoration-none">
+          <div class="project-card rounded-4 p-3 mb-2 bg-white shadow-sm hover-lift">
+            <div class="fw-semibold"><%= p.name %></div>
+            <div class="text-muted small"><%= p.description || 'No description' %></div>
+            <% if (isAdmin) { %>
+              <span class="badge bg-primary-subtle text-primary mt-1"><%= p.members.length %> members</span>
+            <% } else { %>
+              <span class="badge bg-secondary-subtle text-secondary mt-1">Admin: <%= p.admin.name %></span>
+            <% } %>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+
+    <!-- Tasks -->
+    <div class="col-md-8">
+      <h5 class="fw-bold mb-3"><i class="bi bi-list-task text-primary me-2"></i><%= isAdmin ? 'All Tasks' : 'My Tasks' %></h5>
+      <% if (myTasks.length === 0) { %>
+        <div class="text-muted">No tasks assigned.</div>
+      <% } %>
+      <% myTasks.forEach(task => { %>
+        <div class="task-card rounded-4 p-3 mb-2 bg-white shadow-sm">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-semibold"><%= task.title %></div>
+              <div class="text-muted small">
+                <i class="bi bi-folder me-1"></i><%= task.project.name %>
+                <% if (isAdmin) { %> · <i class="bi bi-person me-1"></i><%= task.assignedTo.name %><% } %>
+              </div>
+              <div class="text-muted small">
+                <i class="bi bi-calendar me-1"></i>Due: <%= new Date(task.dueDate).toLocaleDateString('en-IN') %>
+              </div>
+            </div>
+            <div class="d-flex flex-column align-items-end gap-1">
+              <span id="badge-<%= task._id %>" class="badge status-badge <%= task.status === 'Completed' ? 'bg-success' : task.status === 'Overdue' ? 'bg-danger' : task.status === 'In Progress' ? 'bg-warning text-dark' : 'bg-secondary' %>">
+                <%= task.status %>
+              </span>
+              <select class="form-select form-select-sm status-select" data-task-id="<%= task._id %>" style="width:130px;">
+                <option <%= task.status==='Todo'?'selected':'' %>>Todo</option>
+                <option <%= task.status==='In Progress'?'selected':'' %>>In Progress</option>
+                <option <%= task.status==='Completed'?'selected':'' %>>Completed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

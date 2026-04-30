@@ -1,0 +1,34 @@
+<%- include('../partials/header') %>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-folder-fill text-primary me-2"></i>Projects</h2>
+    <% if (isAdmin) { %>
+      <a href="/projects/new" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>New Project</a>
+    <% } %>
+  </div>
+  <% if (projects.length === 0) { %>
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-folder-x" style="font-size:3rem;"></i>
+      <p class="mt-2">No projects yet. <% if (isAdmin) { %><a href="/projects/new">Create one!</a><% } %></p>
+    </div>
+  <% } %>
+  <div class="row g-3">
+    <% projects.forEach(p => { %>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 hover-lift">
+          <div class="card-body p-4">
+            <h5 class="fw-bold"><%= p.name %></h5>
+            <p class="text-muted small"><%= p.description || 'No description provided.' %></p>
+            <% if (isAdmin) { %>
+              <p class="text-muted small"><i class="bi bi-people me-1"></i><%= p.members.length %> member(s)</p>
+            <% } else { %>
+              <p class="text-muted small"><i class="bi bi-person me-1"></i>Admin: <%= p.admin.name %></p>
+            <% } %>
+            <a href="/projects/<%= p._id %>" class="btn btn-outline-primary btn-sm">View Project</a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+<%- include('../partials/footer') %>
